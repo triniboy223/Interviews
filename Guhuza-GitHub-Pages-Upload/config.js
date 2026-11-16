@@ -1,0 +1,1 @@
+window.GUHUZA_CONFIG={supabaseUrl:'https://uapduqdlhcjifwjwhxor.supabase.co',supabasePublishableKey:'sb_publishable_KVu9Ei-3owALmL8j4T5D2Q_Ys9cSIYG'};
