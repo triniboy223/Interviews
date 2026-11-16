@@ -1,6 +1,10 @@
 'use strict';
 (()=>{
  const el=id=>document.getElementById(id);
+ // Start before loading the external account library so a blocked download cannot strand the page.
+ let startupTimer=setTimeout(()=>{el('sessionBanner').hidden=true;el('authPanel').hidden=true;el('connectionPanel').hidden=false;el('connectionMessage').textContent='Your saved session could not finish loading. Close older interview tabs and retry. Your saved sign-in has not been cleared.';},16000);
+ window.GuhuzaStartup={done(){clearTimeout(startupTimer);startupTimer=null;}};
+ if(el('retrySession'))el('retrySession').onclick=()=>location.reload();
  const password=el('authPassword'),confirmation=el('authConfirmPassword');
  function validate(){confirmation.setCustomValidity(window.guhuzaRegister&&password.value!==confirmation.value?'The passwords must match.':'');}
  function showRegistration(register){
