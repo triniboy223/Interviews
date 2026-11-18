@@ -237,37 +237,36 @@ function recordingTakeaway(a,key){
 }
 function renderDeeperQuestions(root){
   const group=make('fieldset');group.append(make('legend','Deeper interview questions'));
-  const hint=make('p','Choose a prompt when you ask it. It will be marked “See recording”. Add a short takeaway only if you want it considered for the review paragraphs.');
+  const hint=make('p','Choose a prompt when you ask it. It will be marked “See recording”. The takeaway box opens below each question. Leave it blank to use “See recording”, or add a brief, factual note for the review paragraphs.');
   hint.className='muted';
   const picker=make('select');picker.id='deeperPicker';picker.setAttribute('aria-label','Interview question prompts');
   picker.append(make('option','Choose a question you’re asking…'));picker.options[0].value='';
-  const area=make('div');group.append(hint,picker,area);root.append(group);
+  const area=make('div');area.className='deeper-question-list';const pickerLabel=make('label','Add a question');pickerLabel.className='main';pickerLabel.htmlFor='deeperPicker';group.append(hint,pickerLabel,picker,area);root.append(group);
   const chosen=new Set(askedPrompts(draft.a).map(([key])=>key));
   function addPrompt(key,label,prompt){
-    const block=make('div');block.style.margin='12px 0';
-    const title=make('strong',prompt);
-    const status=make('p','Asked · See recording');status.className='muted';
-    const detail=make('details'),toggle=make('summary','Add a short takeaway');
+    const block=make('div');block.className='deeper-question-card';
+    const title=make('p',prompt);title.className='deeper-question-prompt';const heading=make('div');heading.className='deeper-question-heading';heading.append(make('strong',label));
+    const status=make('span','Question selected');status.className='deeper-question-status';heading.append(status);
     const answer=make('textarea');answer.id='f_'+key;answer.setAttribute('aria-label',label+' takeaway');answer.spellcheck=true;
-    answer.value=recordingTakeaway(draft.a,key);detail.open=!!answer.value;
+    answer.value=recordingTakeaway(draft.a,key);answer.rows=3;answer.placeholder='What did the candidate say? Capture the key example or outcome.';const takeawayLabel=make('label','Short takeaway (optional)');takeawayLabel.htmlFor=answer.id;takeawayLabel.className='deeper-takeaway-label';const help=make('p','No takeaway? The saved notes will say “See recording”.');help.className='deeper-question-help';help.id='help_'+key;answer.setAttribute('aria-describedby',help.id);
     answer.oninput=()=>put(key,answer.value);
-    detail.append(toggle,answer);
-    const undo=make('button','Unmark question');undo.type='button';
+
+    const undo=make('button','Remove question');undo.type='button';undo.className='deeper-remove';
     undo.onclick=()=>{
       if(answer.value.trim()&&!confirm('Remove this question and its takeaway?'))return;
       chosen.delete(key);delete draft.a[key];put('deeperSelected',[...chosen]);
       Array.from(picker.options).find(o=>o.value===key).disabled=false;block.remove();
     };
-    block.append(title,status,detail,undo);area.append(block);
+    block.append(heading,title,takeawayLabel,answer,help,undo);area.append(block);return answer;
   }
   for(const [key,label,prompt] of deeperQuestions){
-    const option=make('option',label+' — '+prompt);option.value=key;picker.append(option);
+    const option=make('option',label);option.value=key;picker.append(option);
     if(chosen.has(key)){option.disabled=true;addPrompt(key,label,prompt);}
   }
   picker.onchange=()=>{
     const item=deeperQuestions.find(q=>q[0]===picker.value);if(!item)return;
     chosen.add(item[0]);put('deeperSelected',[...chosen]);picker.selectedOptions[0].disabled=true;picker.value='';
-    addPrompt(...item);
+    const answer=addPrompt(...item);answer.focus();
   };
 }
 function renderRecordingPrompts(record){
