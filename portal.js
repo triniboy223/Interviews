@@ -31,7 +31,7 @@ if(!config?.supabaseUrl||!config?.supabasePublishableKey){window.GuhuzaStartup?.
 if(!window.supabase){window.GuhuzaStartup?.done();$('sessionBanner').hidden=true;$('authPanel').hidden=false;message('authMessage','The account service could not load. Check your connection and reload.');return;}
 let persistentStorage;
 try{if(!window.GuhuzaActAs?.isChild){localStorage.setItem('guhuza.session.probe','ok');localStorage.removeItem('guhuza.session.probe');persistentStorage=localStorage;}}catch{message('authMessage','This browser is blocking saved sign-in. Allow site storage to stay signed in after reloading.');}
-db=supabase.createClient(config.supabaseUrl,config.supabasePublishableKey,{auth:{persistSession:!!persistentStorage,storage:persistentStorage,autoRefreshToken:true,detectSessionInUrl:!window.GuhuzaActAs?.isChild}});
+db=supabase.createClient(config.supabaseUrl,config.supabasePublishableKey,{auth:{persistSession:!!persistentStorage,storage:persistentStorage,autoRefreshToken:true,...(window.GuhuzaActAs?.isChild?{lock:async(name,timeout,fn)=>await fn()}:{}),detectSessionInUrl:!window.GuhuzaActAs?.isChild}});
 GuhuzaUI.start({db,owners,user:()=>user,profile:()=>profile,reloadProfile,restore:async()=>{enteredUser=null;return restore();},showSignedOut});
 window.GuhuzaRecordAccess={owner:id=>owners.get(id),owns:id=>owners.get(id)===user?.id,canViewAll:()=>!!(profile?.is_admin||profile?.can_view_all||profile?.can_edit_all)};
 GuhuzaExtras.start({db,owners,user:()=>user,profile:()=>profile,refresh,reloadProfile});
