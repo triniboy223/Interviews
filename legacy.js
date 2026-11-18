@@ -298,7 +298,7 @@ if(opts.includes('Other')){other.hidden=!(draft.a[k]||[]).includes('Other');wrap
   if(window.enhanceForm)window.enhanceForm();
  window.GuhuzaUI?.decorate();
 }
-let reviewScope="own";
+let reviewScope="own",reviewBrowse=true;
 function personalRecords(){return records().filter(r=>window.GuhuzaRecordAccess?.owns(r.id));}
 function scopedRecords(){return reviewScope==="team"&&window.GuhuzaRecordAccess?.canViewAll()?records():personalRecords();}
 function records(){if(!available)return [];return [...cache.keys()].filter(k=>k.startsWith(recKey)).map(k=>load(k,null)).filter(Boolean).sort((a,b)=>b.created.localeCompare(a.created));}
@@ -359,7 +359,7 @@ el('surveyDone').onchange=e=>{
   r.surveyCompleted=e.target.checked;
   if(!persist(recKey+r.id,r))e.target.checked=!e.target.checked;
 };
-function renderReview(){if(el("reviewScopeLabel"))el("reviewScopeLabel").textContent=reviewScope==="team"?"Team interview view. Return to Saved interviews for your own records.":"Your own interviews";const list=scopedRecords(),pick=el('pick');pick.replaceChildren();if(!list.some(r=>r.id===current))current=list[0]?.id||'';
+function renderReview(){if(reviewBrowse&&window.GuhuzaLibrary){GuhuzaLibrary.browse();return;}if(el("reviewScopeLabel"))el("reviewScopeLabel").textContent=reviewScope==="team"?"Team interview view. Return to Saved interviews for your own records.":"Your own interviews";const list=scopedRecords(),pick=el('pick');pick.replaceChildren();if(!list.some(r=>r.id===current))current=list[0]?.id||'';
 // Records are sorted newest-first by their initial save date. Keep groups in that order,
 // and keep each group's interviews newest-first as well.
 const grouped=new Map();
@@ -381,7 +381,7 @@ for(const group of grouped.values()){
   }
   pick.append(section);
 }
-pick.value=current;pick.disabled=!current;el('deleteInterview').hidden=!current;el('empty').hidden=!!current;el('views').hidden=!current;el('tableView').hidden=!current;el('textView').hidden=!current;const r=getCurrent();renderSurvey(r);renderContact(r);renderRecordingPrompts(r);setReviewOwner(r);if(!r)return;
+pick.value=current;pick.disabled=!current;el('deleteInterview').hidden=!current;el('empty').hidden=!!current;el('views').hidden=!current;el('tableView').hidden=!current;el('textView').hidden=!current;const r=getCurrent();renderSurvey(r);renderContact(r);renderRecordingPrompts(r);setReviewOwner(r);window.GuhuzaLibrary?.detail(r,reviewScope);if(!r)return;
 const table=make('table'),top=make('tr');top.append(make('th','Name: '+r.a.name),make('th','Position: '+(r.a.role||'')));table.append(top);const lines=rows(r);for(const [k,v] of lines){const tr=make('tr');const value=make('td',v);if(k==='Who is interviewing?'&&window.portalProfile?.is_admin){const link=make('button',v||'View interviewer profile');link.className='interviewer-profile-link';link.type='button';link.title='Open interviewer profile';link.onclick=()=>GuhuzaExtras.openInterviewer(r).catch(e=>alert(e.message));value.replaceChildren(link);}tr.append(make('td',k),value);table.append(tr);}el('table').replaceChildren(table);
 el('plain').value=[['Name',r.a.name],['Position',r.a.role],...lines].filter(z=>z[1]).map(z=>z[0]+': '+z[1]).join('\n');
 el('checks').replaceChildren();prefs.dest.forEach((name,i)=>{const lab=make('label');lab.className='chip';const c=make('input');c.type='checkbox';c.checked=!!r.copied[i];c.onchange=()=>{const live=getCurrent();live.copied[i]=c.checked;if(!persist(recKey+live.id,live))c.checked=!c.checked;};lab.append(c,document.createTextNode(name));el('checks').append(lab);});}
@@ -398,6 +398,7 @@ function renderTracker(){
   el('trackerOutstanding').textContent=String(totals.outstanding);
   el('trackerComplete').textContent=String(totals.complete);
   for(let i=0;i<3;i++)el('trackerDest'+i).textContent=prefs.dest[i]||'Follow-up task '+(i+1);
+if(window.GuhuzaLibrary){GuhuzaLibrary.renderTracker({records:all,prefs,onOpen:r=>{reviewBrowse=false;current=r.id;el('result').textContent='';tab(true);},onToggle:(r,i,value)=>{const latest=load(recKey+r.id,null);if(!latest){el('trackerMessage').textContent='This interview is no longer available. Refresh to update your list.';return;}latest.copied=Array.from({length:3},(_,j)=>j===i?value:!!latest.copied?.[j]);if(!persist(recKey+latest.id,latest))return;el('trackerMessage').textContent=(prefs.dest[i]||'Task')+' marked '+(value?'complete':'outstanding')+' for '+latest.a.name+'.';renderTracker();}});return;}
   const matching=all.filter(r=>{
     const state=trackerState(r).state;
     if(filter==='outstanding'&&state==='complete')return false;
@@ -445,9 +446,9 @@ function tab(view){
   el('statusTab').setAttribute('aria-selected',String(status));
   if(saved)renderReview();else if(status)renderTracker();window.scrollTo(0,0);
 }
-function save(view){if(!el('form').reportValidity())return;if(!draft.a.name.trim()){el('f_name').focus();return;}const old=draft.id?load(recKey+draft.id,null):null;const r={...(old||{}),id:draft.id||uid(),created:old?.created||new Date().toISOString(),a:{...draft.a,name:draft.a.name.trim()},review:old?.review||{},surveyCompleted:!!old?.surveyCompleted,copied:old?.copied||[false,false,false]};if(old?.review && JSON.stringify(old.a)!==JSON.stringify(r.a))r.review.needsUpdate=true;if(!persist(recKey+r.id,r))return;current=r.id;draft={a:{interviewer:window.portalProfile?.display_name||''}};persist(prefix+'draft',draft);renderForm();tab(view);el(view?'result':'draftStatus').textContent='Interview queued for '+r.a.name+'. Check the shared database status above.';if(!view)el('f_name').focus();}
-el('form').onsubmit=e=>{e.preventDefault();save(false)};el('saveView').onclick=()=>save(true);el('liveTab').onclick=()=>tab(false);el('savedTab').onclick=()=>{reviewScope='own';tab(true);};el('statusTab').onclick=()=>{reviewScope='own';tab('tracker');};el('trackerFilter').onchange=renderTracker;el('trackerSearch').oninput=renderTracker;el('pick').onchange=e=>{current=e.target.value;el('result').textContent='';renderReview();};
-el('deleteInterview').onclick=async()=>{const r=getCurrent();if(!r||!confirm('Delete this interview from shared storage?'))return;try{await window.portalDelete(r.id);cache.delete(recKey+r.id);current='';renderReview();}catch(e){warn(e.message);}};
+function save(view){if(!el('form').reportValidity())return;if(!draft.a.name.trim()){el('f_name').focus();return;}const old=draft.id?load(recKey+draft.id,null):null;const r={...(old||{}),id:draft.id||uid(),created:old?.created||new Date().toISOString(),a:{...draft.a,name:draft.a.name.trim()},review:old?.review||{},surveyCompleted:!!old?.surveyCompleted,copied:old?.copied||[false,false,false]};if(old?.review && JSON.stringify(old.a)!==JSON.stringify(r.a))r.review.needsUpdate=true;if(!persist(recKey+r.id,r))return;current=r.id;reviewBrowse=false;draft={a:{interviewer:window.portalProfile?.display_name||''}};persist(prefix+'draft',draft);renderForm();tab(view);el(view?'result':'draftStatus').textContent='Interview queued for '+r.a.name+'. Check the shared database status above.';if(!view)el('f_name').focus();}
+el('form').onsubmit=e=>{e.preventDefault();save(false)};el('saveView').onclick=()=>save(true);el('liveTab').onclick=()=>tab(false);el('savedTab').onclick=()=>{reviewScope='own';reviewBrowse=true;tab(true);};el('statusTab').onclick=()=>{reviewScope='own';tab('tracker');};el('trackerFilter').onchange=renderTracker;el('trackerSearch').oninput=renderTracker;el('pick').onchange=e=>{current=e.target.value;el('result').textContent='';renderReview();};
+el('deleteInterview').onclick=async()=>{const r=getCurrent();if(!r||!confirm('Delete this interview from shared storage?'))return;try{await window.portalDelete(r.id);cache.delete(recKey+r.id);current='';reviewBrowse=true;renderReview();}catch(e){warn(e.message);}};
 el('edit').onclick=()=>{if(Object.entries(draft.a).some(([k,v])=>k!=='interviewer'&&String(v).trim())&&!confirm('Replace the current draft with this saved interview?'))return;const r=getCurrent();draft={id:r.id,a:{...r.a}};persist(prefix+'draft',draft);renderForm();tab(false);};
 async function copy(rich){const t=el('table').firstElementChild,p=el('plain');const plain=rich?[...t.rows].map(row=>[...row.cells].map(c=>c.textContent.replace(/[\t\r\n]+/g,' ')).join('\t')).join('\n'):p.value;
 const styled=t.cloneNode(true);styled.querySelectorAll('th,td').forEach(c=>c.style.cssText='border:1px solid #bccbc2;padding:5px;text-align:left;'+(c.tagName==='TH'?'background:#32ec4a;':''));const html=styled.outerHTML;
@@ -1194,4 +1195,4 @@ for(const b of document.querySelectorAll('[data-undo-note]'))b.onclick=()=>{
 
 settings();renderForm();tab(false);
 
-window.legacy={cache,prefix,recKey,records,updateName:name=>{draft.a.interviewer=name;renderForm();},refresh:()=>{settings();renderForm();renderReview();renderTracker();},setUser:name=>{draft={a:{interviewer:name}};current='';renderForm();},open:id=>{reviewScope="own";current=id;tab(true);},openTeam:id=>{if(!window.GuhuzaRecordAccess?.canViewAll())return;reviewScope="team";current=id;tab(true);},showTeam:()=>{if(!window.GuhuzaRecordAccess?.canViewAll())return;reviewScope="team";tab(true);},reset:()=>{reviewScope="own";cache.clear();draft={a:{}};current='';}};
+window.legacy={refreshTracker:renderTracker,cache,prefix,recKey,records,updateName:name=>{draft.a.interviewer=name;renderForm();},refresh:()=>{settings();renderForm();renderReview();renderTracker();},setUser:name=>{draft={a:{interviewer:name}};current='';renderForm();},open:id=>{reviewScope="own";reviewBrowse=false;current=id;tab(true);},openTeam:id=>{if(!window.GuhuzaRecordAccess?.canViewAll())return;reviewScope="team";reviewBrowse=false;current=id;tab(true);},showTeam:()=>{if(!window.GuhuzaRecordAccess?.canViewAll())return;reviewScope="team";reviewBrowse=false;tab(true);},reset:()=>{reviewScope="own";reviewBrowse=true;cache.clear();draft={a:{}};current='';}};

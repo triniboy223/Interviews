@@ -31,4 +31,3 @@ function validDate(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return false
 function eventDate(record){if(validDate(record.interviewDate)){const [y,m,d]=record.interviewDate.split('-').map(Number);return new Date(y,m-1,d);}return new Date(record.created);}
 window.GuhuzaBacklogParser={parse,validDate,eventDate};
 })();
-
