@@ -298,6 +298,9 @@ if(opts.includes('Other')){other.hidden=!(draft.a[k]||[]).includes('Other');wrap
   if(window.enhanceForm)window.enhanceForm();
  window.GuhuzaUI?.decorate();
 }
+let reviewScope="own";
+function personalRecords(){return records().filter(r=>window.GuhuzaRecordAccess?.owns(r.id));}
+function scopedRecords(){return reviewScope==="team"&&window.GuhuzaRecordAccess?.canViewAll()?records():personalRecords();}
 function records(){if(!available)return [];return [...cache.keys()].filter(k=>k.startsWith(recKey)).map(k=>load(k,null)).filter(Boolean).sort((a,b)=>b.created.localeCompare(a.created));}
 function getCurrent(){return current?load(recKey+current,null):null;}
 function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);}
@@ -356,7 +359,7 @@ el('surveyDone').onchange=e=>{
   r.surveyCompleted=e.target.checked;
   if(!persist(recKey+r.id,r))e.target.checked=!e.target.checked;
 };
-function renderReview(){const list=records(),pick=el('pick');pick.replaceChildren();if(!list.some(r=>r.id===current))current=list[0]?.id||'';
+function renderReview(){if(el("reviewScopeLabel"))el("reviewScopeLabel").textContent=reviewScope==="team"?"Team interview view. Return to Saved interviews for your own records.":"Your own interviews";const list=scopedRecords(),pick=el('pick');pick.replaceChildren();if(!list.some(r=>r.id===current))current=list[0]?.id||'';
 // Records are sorted newest-first by their initial save date. Keep groups in that order,
 // and keep each group's interviews newest-first as well.
 const grouped=new Map();
@@ -371,7 +374,7 @@ for(const group of grouped.values()){
   const heading=[group.role||'Position not specified',group.job].filter(Boolean).join(' · ');
   const section=make('optgroup');section.label=heading;
   for(const r of group.items){
-    const d=new Date(r.created);
+    const d=window.GuhuzaBacklogParser?GuhuzaBacklogParser.eventDate(r):new Date(r.created);
     const date=Number.isNaN(d.getTime())?'Date unavailable':d.toLocaleString('en-CA',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
     const o=make('option',[r.a.name||'Candidate not specified',date].join(' · '));
     o.value=r.id;section.append(o);
@@ -388,7 +391,7 @@ function trackerState(r){
   return {flags,done,state:done===3?'complete':done===0?'notstarted':'inprogress'};
 }
 function renderTracker(){
-  const all=records(),filter=el('trackerFilter').value,query=el('trackerSearch').value.trim().toLocaleLowerCase();
+  const all=personalRecords(),filter=el('trackerFilter').value,query=el('trackerSearch').value.trim().toLocaleLowerCase();
   const totals={complete:0,outstanding:0};
   for(const r of all){const state=trackerState(r).state;if(state==='complete')totals.complete++;else totals.outstanding++;}
   el('trackerTotal').textContent=String(all.length);
@@ -442,8 +445,8 @@ function tab(view){
   el('statusTab').setAttribute('aria-selected',String(status));
   if(saved)renderReview();else if(status)renderTracker();window.scrollTo(0,0);
 }
-function save(view){if(!el('form').reportValidity())return;if(!draft.a.name.trim()){el('f_name').focus();return;}const old=draft.id?load(recKey+draft.id,null):null;const r={id:draft.id||uid(),created:old?.created||new Date().toISOString(),a:{...draft.a,name:draft.a.name.trim()},review:old?.review||{},surveyCompleted:!!old?.surveyCompleted,copied:old?.copied||[false,false,false]};if(old?.review && JSON.stringify(old.a)!==JSON.stringify(r.a))r.review.needsUpdate=true;if(!persist(recKey+r.id,r))return;current=r.id;draft={a:{interviewer:window.portalProfile?.display_name||''}};persist(prefix+'draft',draft);renderForm();tab(view);el(view?'result':'draftStatus').textContent='Interview queued for '+r.a.name+'. Check the shared database status above.';if(!view)el('f_name').focus();}
-el('form').onsubmit=e=>{e.preventDefault();save(false)};el('saveView').onclick=()=>save(true);el('liveTab').onclick=()=>tab(false);el('savedTab').onclick=()=>tab(true);el('statusTab').onclick=()=>tab('tracker');el('trackerFilter').onchange=renderTracker;el('trackerSearch').oninput=renderTracker;el('pick').onchange=e=>{current=e.target.value;el('result').textContent='';renderReview();};
+function save(view){if(!el('form').reportValidity())return;if(!draft.a.name.trim()){el('f_name').focus();return;}const old=draft.id?load(recKey+draft.id,null):null;const r={...(old||{}),id:draft.id||uid(),created:old?.created||new Date().toISOString(),a:{...draft.a,name:draft.a.name.trim()},review:old?.review||{},surveyCompleted:!!old?.surveyCompleted,copied:old?.copied||[false,false,false]};if(old?.review && JSON.stringify(old.a)!==JSON.stringify(r.a))r.review.needsUpdate=true;if(!persist(recKey+r.id,r))return;current=r.id;draft={a:{interviewer:window.portalProfile?.display_name||''}};persist(prefix+'draft',draft);renderForm();tab(view);el(view?'result':'draftStatus').textContent='Interview queued for '+r.a.name+'. Check the shared database status above.';if(!view)el('f_name').focus();}
+el('form').onsubmit=e=>{e.preventDefault();save(false)};el('saveView').onclick=()=>save(true);el('liveTab').onclick=()=>tab(false);el('savedTab').onclick=()=>{reviewScope='own';tab(true);};el('statusTab').onclick=()=>{reviewScope='own';tab('tracker');};el('trackerFilter').onchange=renderTracker;el('trackerSearch').oninput=renderTracker;el('pick').onchange=e=>{current=e.target.value;el('result').textContent='';renderReview();};
 el('deleteInterview').onclick=async()=>{const r=getCurrent();if(!r||!confirm('Delete this interview from shared storage?'))return;try{await window.portalDelete(r.id);cache.delete(recKey+r.id);current='';renderReview();}catch(e){warn(e.message);}};
 el('edit').onclick=()=>{if(Object.entries(draft.a).some(([k,v])=>k!=='interviewer'&&String(v).trim())&&!confirm('Replace the current draft with this saved interview?'))return;const r=getCurrent();draft={id:r.id,a:{...r.a}};persist(prefix+'draft',draft);renderForm();tab(false);};
 async function copy(rich){const t=el('table').firstElementChild,p=el('plain');const plain=rich?[...t.rows].map(row=>[...row.cells].map(c=>c.textContent.replace(/[\t\r\n]+/g,' ')).join('\t')).join('\n'):p.value;
@@ -1191,4 +1194,4 @@ for(const b of document.querySelectorAll('[data-undo-note]'))b.onclick=()=>{
 
 settings();renderForm();tab(false);
 
-window.legacy={cache,prefix,recKey,records,updateName:name=>{draft.a.interviewer=name;renderForm();},refresh:()=>{settings();renderForm();renderReview();renderTracker();},setUser:name=>{draft={a:{interviewer:name}};current='';renderForm();},open:id=>{current=id;tab(true);},reset:()=>{cache.clear();draft={a:{}};current='';}};
+window.legacy={cache,prefix,recKey,records,updateName:name=>{draft.a.interviewer=name;renderForm();},refresh:()=>{settings();renderForm();renderReview();renderTracker();},setUser:name=>{draft={a:{interviewer:name}};current='';renderForm();},open:id=>{reviewScope="own";current=id;tab(true);},openTeam:id=>{if(!window.GuhuzaRecordAccess?.canViewAll())return;reviewScope="team";current=id;tab(true);},showTeam:()=>{if(!window.GuhuzaRecordAccess?.canViewAll())return;reviewScope="team";tab(true);},reset:()=>{reviewScope="own";cache.clear();draft={a:{}};current='';}};
