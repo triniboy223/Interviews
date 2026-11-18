@@ -11,7 +11,7 @@ function withTimeout(task,ms=15000){let timer;return Promise.race([task,new Prom
 async function restore(){if(restoring)return restoring;restoring=withTimeout((async()=>{const {data,error}=await db.auth.getSession();if(error)throw error;lastSession=data.session;await enter(data.session);})()).catch(loadError).finally(()=>{restoring=null;});return restoring;}
 $('retrySession').onclick=()=>location.reload();
 function check(result){if(result.error)throw result.error;return result.data;}
-function status(){retry.hidden=failed.size===0;message('cloudStatus',failed.size?`${failed.size} interview updates have NOT reached the database. Keep this tab open. Use Retry or download a backup.`:pending?'Saving to shared database...':'All interview changes saved to shared database. Google Sheets copies run on the configured schedule.');}
+function status(){retry.hidden=failed.size===0;message('cloudStatus',failed.size?`${failed.size} interview updates have NOT reached the database. Keep this tab open. Use Retry or download a backup.`:pending?'Saving to shared database...':'All changes saved');}
 const retry=document.createElement('button');retry.hidden=true;retry.textContent='Retry failed saves';retry.onclick=()=>{for(const r of [...failed.values()])window.portalWrite(r);};$('cloudStatus').after(retry);
 window.portalWrite=r=>{if(!user)return false;const snapshot=structuredClone(r);pending++;status();queue=queue.then(async()=>{try{check(await db.rpc('save_interview',{record:snapshot}));if(!owners.has(snapshot.id))owners.set(snapshot.id,user.id);failed.delete(snapshot.id);window.GuhuzaExtras?.saved();}catch(e){failed.set(snapshot.id,snapshot);console.error('Interview save failed',e.message);}finally{pending--;status();GuhuzaUI.dashboard();}});return true;};
 window.portalDelete=async id=>{await queue;check(await db.from('interviews').delete().eq('id',id));owners.delete(id);setTimeout(()=>GuhuzaUI.dashboard(),0);};
@@ -38,4 +38,3 @@ GuhuzaExtras.start({db,owners,user:()=>user,profile:()=>profile,refresh,reloadPr
 db.auth.onAuthStateChange((event,session)=>{lastSession=session;if(event==='PASSWORD_RECOVERY'){window.GuhuzaStartup?.done();user=session?.user;GuhuzaUI.recover();return;}if(event==='SIGNED_OUT'){showSignedOut();return;}if(event==='TOKEN_REFRESHED'){if(session?.user)user=session.user;return;}if(event==='INITIAL_SESSION'||event==='SIGNED_IN'||event==='USER_UPDATED')setTimeout(()=>{if(event==='USER_UPDATED'&&user){reloadProfile().then(()=>GuhuzaUI.profileUpdated()).catch(loadError);}else enter(session).catch(loadError);},0);});
 restore();
 })();
-
