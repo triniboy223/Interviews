@@ -434,7 +434,7 @@ if(window.GuhuzaLibrary){GuhuzaLibrary.renderTracker({records:all,prefs,onOpen:r
   el('trackerEmpty').hidden=matching.length!==0;
   el('trackerEmpty').textContent=all.length?'No interviews match the current filter or search.':'No saved interviews yet. Save an interview or restore your backup to see it here.';
 }
-function tab(view){
+function tab(view){if(window.GuhuzaTeams?.ready()&&!GuhuzaTeams.allowed('hr','interviews')){GuhuzaTeams.home();return;}
  window.GuhuzaUI?.show(view===true?"saved":view==="tracker"?"status":"form");
  if(el("adminPanel"))el("adminPanel").hidden=true;
   const saved=view===true||view==='review',status=view==='tracker';
