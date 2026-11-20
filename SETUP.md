@@ -187,3 +187,7 @@ Company posts are readable by active accounts. Team posts require current team m
 Training-section overrides are per person and anchored to a resource in the stage, so section renaming/reordering follows the stage resource. They bypass only that stage’s sequential gate, preserve path membership checks and do not change progress. Admin profile controls can grant or revoke them. Personal activity counts use current path revisions and currently eligible work. The notification poll refreshes counts and uses the existing 60-second cadence. Meeting reminders are in-site only, within ten minutes of start; the portal must be open/signed in.
 
 Supplied Gerrie images are exported to 480px JPEG assets for site delivery. Keep those image files beside the HTML when packaging or uploading the site.
+
+
+## v4.1.0 private issue reports
+Issue reports, comments, screenshot metadata and per-admin reads are protected by database access rules. The issue-attachments bucket is private, with an 8 MB image limit. Portal administrators can manage all reports; team administrators can manage their assigned teams. Reporters can see their own reports. Unread counts are individual and independent of report status. Failed-save reporting queues opaque interview IDs locally until a connection returns.
