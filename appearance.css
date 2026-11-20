@@ -26,3 +26,12 @@ html[data-theme=dark] :is(#fields .chip,.admin-profile-section .chip,.analytics-
 html[data-theme=dark] :is(.fit-good,.person-access-badge[data-state=active]){background:#163f36!important;color:#b0ecd4!important}html[data-theme=dark] .fit-negative{background:#522733!important;color:#ffc7cf!important}html[data-theme=dark] :is(.fit-concern,.assignment-warnings){background:#43351e!important;color:#ffe0a7!important}
 
 header #accountMenu{margin-left:0!important}header #appearanceToggle{margin-left:auto}header .notification-bell:not([hidden]) + #appearanceToggle{margin-left:0}html[data-theme=dark] .gerrie-banner{background:linear-gradient(135deg,#192e49,#213c5c)!important;border-color:#3a5575!important}
+/* Interview surfaces include dynamically created sections as well as the main panels. */
+html[data-theme=dark] :is(section,fieldset,details,.bar,#formSectionNav,.view-switch,.library-toolbar,.tracker-summary>div,.money-box,.salary-box,.fit-evidence-line,.resume-analyzer-entry,.observation-dialog,.import-preview-card,#candidateContact,#surveyPanel,.saved-interview-actions,.practice-intro,.practice-coach,.practice-banner){background:#192a41!important;color:#e3edfc!important;border-color:#344a67!important}
+html[data-theme=dark] :is(#review,#tracker,#interviewBrowser,#interviewDetail,.review-columns,.review-column,.library-search-row,.tracker-extra-controls){background:transparent!important;color:#e3edfc!important}
+html[data-theme=dark] :is(.label,.main,.muted,.status,.section-help,.form-intro,.small-note,.library-row-meta,.library-job-card small,.import-data-row,.tracker-intro,.fit-evidence-line span,.fit-evidence-line blockquote,.practice-feedback){color:#b8cce5!important}
+html[data-theme=dark] :is(#formSectionNav a,.view-switch button[aria-pressed=true],.chip,.money-box,.import-warning,.tour-task){background:#263f60!important;color:#e0edff!important;border-color:#476489!important}
+html[data-theme=dark] .chip:has(:checked){background:#315d8d!important;border-color:#99c5ff!important}
+html[data-theme=dark] :is(input,button):disabled{color:#a9bed8!important;opacity:.7}
+html[data-theme=dark] input[type=file]::file-selector-button{background:#263f60!important;color:#e0edff!important;border:1px solid #55759c;border-radius:7px;padding:8px}
+html[data-theme=dark] .practice-highlight{outline-color:#92c2ff!important;box-shadow:0 0 0 7px #8dbbff17!important;background:#213c5b!important}

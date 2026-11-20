@@ -195,3 +195,7 @@ Issue reports, comments, screenshot metadata and per-admin reads are protected b
 
 ## v4.2.0 training, histories and appearance
 Training management RPCs enforce team admin access. Archive preserves progress; permanent removal is restricted to unused items. Candidate identities contain only opaque IDs. Candidate searches and histories filter by existing HR interview access and ownership. Matching names never merge automatically. Meeting reminder events persist privately per user for the inbox and catch up when the portal is opened; no browser push service is configured. The appearance preference is stored in this browser and is applied before the page loads.
+
+
+## v4.3.0 interview practice and save controls
+The guided exercise uses only in-memory tutorial records with a tutorial- ID prefix. The shared save RPC rejects those IDs and tutorialPractice flags. Original drafts, cached interview records and library filters are restored when the exercise exits. The Practice interview assessment is also available for ordinary saved practice records; is_practice_interview excludes them from team summaries and rankings, and the browser excludes them from personal totals and analytics. Save and start-new waits for the current save queue and does not clear the form after a failed shared save.
