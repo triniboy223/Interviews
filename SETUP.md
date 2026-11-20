@@ -158,3 +158,12 @@ Lesson notes and status are protected by row policies: own records and team admi
 Predefined activities populate task/project title and instructions with a server-validated link to the source resource. Supervisors choose the actual schedule and assignees. Learning notes are required; source activities requiring supervisor confirmation wait for a different team admin. New learning writes are included in support-session auditing.
 
 Hash section addresses work on GitHub Pages without server rewrites. URLs contain navigation state and opaque record IDs, not draft searches, candidate names, passwords or sign-in tokens. They are permission checked on restore and do not make team data public. Authentication recovery fragments are handled separately.
+
+
+## v3.5.0 inline learning and sequential sections
+
+Lessons expand on one Training page. Resources & tools has its own team route and uses the existing Training permission, plus per-tool restricted access where configured. No bulk access expansion was applied. Team admins have a scoped area-access setter for existing non-admin members of their team. They cannot use it to change portal roles or memberships.
+
+Full training is the implicit default unless a team admin has chosen Condensed. Sections follow section_order and the applicable path membership. Each next section requires completed_count * 100 >= previous_section_total * 70, using current-revision completed learning records. Pending confirmations do not count. The same condition protects raw resource reads, catalogue content and completion RPCs. Admin preview remains available. Rates and full team lesson matrices are admin-only; students see their own status.
+
+The workspace RPC returns the team catalogue plus permitted progress in one response. Browser caching is per signed-in user/team, expires after 60 seconds, and is invalidated on writes or Refresh. Inline lesson browsing performs no further fetch. Native resource anchors preserve normal browser behaviour and external-provider access requirements. Spreadsheet links use the existing permitted team resource URLs, retaining gid/range fragments; the original workbook tab IDs were checked using Drive metadata without importing its personal/candidate rows.
