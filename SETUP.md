@@ -178,3 +178,12 @@ work_task_templates stores only team task title, instructions and recurrence set
 ## v3.8.0 team meeting administration
 
 Meetings and joining URLs remain in private Supabase tables. Guarded admin RPCs manage recurring title, URL, weekday, time and required status. Shared meeting definitions use per-team settings overrides, so an edit or removal is isolated to the selected team. Removal hides the team association and retains cancellation records. The schedule filters weekdays before returning cards and still hides join links outside the meeting day, during cancellation/suspension or outside a training-room grant. Zoom and other secure HTTPS destinations are supported. The Thursday walkthrough is assigned to every current team as optional, 14:00 to 14:30 America/Toronto.
+
+
+## v4.0.0 community, personal counts and stage access
+
+Company posts are readable by active accounts. Team posts require current team membership, including secondary memberships. Company creation requires an admin role; highlighted team announcements require lead/admin membership of that team. Admin audience choices list only team-admin assignments. RLS and guarded RPCs enforce access, ownership, moderation and reaction/comment scope; private author emails are not returned to the board. Inbox events persist for their recipients and are filtered again when the bell loads. Deleted or inaccessible posts are not exposed through old notifications.
+
+Training-section overrides are per person and anchored to a resource in the stage, so section renaming/reordering follows the stage resource. They bypass only that stage’s sequential gate, preserve path membership checks and do not change progress. Admin profile controls can grant or revoke them. Personal activity counts use current path revisions and currently eligible work. The notification poll refreshes counts and uses the existing 60-second cadence. Meeting reminders are in-site only, within ten minutes of start; the portal must be open/signed in.
+
+Supplied Gerrie images are exported to 480px JPEG assets for site delivery. Keep those image files beside the HTML when packaging or uploading the site.
