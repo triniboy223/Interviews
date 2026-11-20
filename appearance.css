@@ -35,3 +35,5 @@ html[data-theme=dark] .chip:has(:checked){background:#315d8d!important;border-co
 html[data-theme=dark] :is(input,button):disabled{color:#a9bed8!important;opacity:.7}
 html[data-theme=dark] input[type=file]::file-selector-button{background:#263f60!important;color:#e0edff!important;border:1px solid #55759c;border-radius:7px;padding:8px}
 html[data-theme=dark] .practice-highlight{outline-color:#92c2ff!important;box-shadow:0 0 0 7px #8dbbff17!important;background:#213c5b!important}
+
+html[data-theme=dark] :is(.tracker-toolbar,.tracker-extra-controls,.followup-column,.followup-card,.followup-list,.library-interview-list,.tour-card>.actions){background:#192a41!important;color:#e3edfc!important;border-color:#344a67!important}html[data-theme=dark] :is(.tracker-toolbar label,.tracker-extra-controls label,.followup-meta,.followup-progress,.tracker-summary span){color:#b8cce5!important}html[data-theme=dark] .followup-column-heading>span{background:#2b4669!important;color:#dcecff!important}html[data-theme=dark] .followup-progress{border-color:#425b7c!important}html[data-theme=dark] input::placeholder,html[data-theme=dark] textarea::placeholder{color:#a1b7d1;opacity:1}
