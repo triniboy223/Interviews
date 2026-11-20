@@ -191,3 +191,7 @@ Supplied Gerrie images are exported to 480px JPEG assets for site delivery. Keep
 
 ## v4.1.0 private issue reports
 Issue reports, comments, screenshot metadata and per-admin reads are protected by database access rules. The issue-attachments bucket is private, with an 8 MB image limit. Portal administrators can manage all reports; team administrators can manage their assigned teams. Reporters can see their own reports. Unread counts are individual and independent of report status. Failed-save reporting queues opaque interview IDs locally until a connection returns.
+
+
+## v4.2.0 training, histories and appearance
+Training management RPCs enforce team admin access. Archive preserves progress; permanent removal is restricted to unused items. Candidate identities contain only opaque IDs. Candidate searches and histories filter by existing HR interview access and ownership. Matching names never merge automatically. Meeting reminder events persist privately per user for the inbox and catch up when the portal is opened; no browser push service is configured. The appearance preference is stored in this browser and is applied before the page loads.
