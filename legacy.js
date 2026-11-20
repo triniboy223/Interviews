@@ -43,7 +43,7 @@ function salaryFields(wrap){
   select.value=draft.a.salaryUnit||(hasOldAmounts?'':'annual');
   const hint=make('p');hint.className='muted';hint.id='salaryHint';
   const grid=make('div');grid.className='salary-fields';
-  wrap.append(heading,select,hint,grid);
+  const interpretation=make('p');interpretation.className='salary-interpretation';interpretation.setAttribute('role','status');interpretation.setAttribute('aria-live','polite');wrap.append(heading,select,hint,grid,interpretation);function describeSalary(){interpretation.textContent=salarySummary(draft.a)?'Recorded as: '+salarySummary(draft.a):'';}
   function renderAmounts(){
     const unit=select.value;
     hint.textContent=unit==='annual'?'Enter 70 for $70,000 per year. You can also paste a full salary such as 85,000.':unit==='hourly'?'Enter the dollar amount per hour, such as 25.50.':'These entries were saved in dollars. Choose a pay type to label them in your notes.';
@@ -74,10 +74,10 @@ function salaryFields(wrap){
       if(draft.a[draftKey]!==undefined){input.value=draft.a[draftKey];validate();}
       input.oninput=()=>{
         draft.a.salaryUnit=unit;draft.a[draftKey]=input.value;
-        const v=validate();put(key,v===null?'':v);
+        const v=validate();put(key,v===null?'':v);describeSalary();
       };
       input.onblur=()=>{if(validate()!==null){delete draft.a[draftKey];showAmount();persist(prefix+'draft',draft);}};
-      box.append(symbol,input);label.append(box);grid.append(label);
+      box.append(symbol,input);label.append(box);grid.append(label);describeSalary();
     }
   }
   select.onchange=()=>{

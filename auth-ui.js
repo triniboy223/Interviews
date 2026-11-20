@@ -10,7 +10,7 @@
  function showRegistration(register){
   window.guhuzaRegister=register;
   el('authTitle').textContent=register?'Create your Guhuza account':'Sign in to Guhuza';
-  el('authIntro').textContent=register?'Enter your name, email and a password to register.':'Sign in to access your interview workspace.';
+  el('authIntro').textContent=register?'Enter your name, email and a password to register.':'Sign in to access your co-op workspace.';
   el('nameLabel').hidden=!register;el('authName').required=register;
   el('confirmLabel').hidden=!register;confirmation.required=register;
   password.autocomplete=register?'new-password':'current-password';
